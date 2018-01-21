@@ -100,7 +100,7 @@ open class ImagePickerController: UIViewController {
     self.configuration = Configuration()
     super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
   }
-  
+
   public required init?(coder aDecoder: NSCoder) {
     self.configuration = Configuration()
     super.init(coder: aDecoder)
@@ -128,6 +128,8 @@ open class ImagePickerController: UIViewController {
     setupConstraints()
   }
 
+  fileprivate var safeAreaBottom: CGFloat = 0
+
   open override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
 
@@ -138,6 +140,26 @@ open class ImagePickerController: UIViewController {
     statusBarHidden = UIApplication.shared.isStatusBarHidden
 
     self.handleRotation(nil)
+  }
+  
+  lazy fileprivate var maskView: UIView = { [unowned self] in
+    let maskView = UIView()
+    maskView.frame = CGRect(x: 0,
+                            y: self.totalSize.height - safeAreaBottom,
+                            width: totalSize.width,
+                            height: safeAreaBottom)
+    maskView.backgroundColor = self.configuration.mainColor
+    return maskView
+  }()
+
+  @available(iOS 11.0, *)
+  open override func viewSafeAreaInsetsDidChange() {
+    super.viewSafeAreaInsetsDidChange()
+
+    safeAreaBottom = view.safeAreaInsets.bottom
+    if safeAreaBottom > 0 {
+      view.addSubview(maskView)
+    }
   }
 
   open override func viewDidAppear(_ animated: Bool) {
@@ -150,7 +172,7 @@ open class ImagePickerController: UIViewController {
     galleryView.collectionView.contentInset = UIEdgeInsets.zero
 
     galleryView.frame = CGRect(x: 0,
-                               y: totalSize.height - bottomContainer.frame.height - galleryHeight,
+                               y: totalSize.height - bottomContainer.frame.height - safeAreaBottom - galleryHeight,
                                width: totalSize.width,
                                height: galleryHeight)
     galleryView.updateFrames()
@@ -231,7 +253,7 @@ open class ImagePickerController: UIViewController {
       selector: #selector(adjustButtonTitle(_:)),
       name: NSNotification.Name(rawValue: ImageStack.Notifications.imageDidDrop),
       object: nil)
-    
+
     NotificationCenter.default.addObserver(self,
                                            selector: #selector(dismissIfNeeded),
                                            name: NSNotification.Name(rawValue: ImageStack.Notifications.imageDidDrop),
@@ -276,7 +298,7 @@ open class ImagePickerController: UIViewController {
       configuration.doneButtonTitle : configuration.cancelButtonTitle
     bottomContainer.doneButton.setTitle(title, for: UIControlState())
   }
-  
+
   @objc func dismissIfNeeded() {
     // If only one image is requested and a push occures, automatically dismiss the ImagePicker
     if imageLimit == 1 {
@@ -325,7 +347,7 @@ open class ImagePickerController: UIViewController {
   }
 
   func updateGalleryViewFrames(_ constant: CGFloat) {
-    galleryView.frame.origin.y = totalSize.height - bottomContainer.frame.height - constant
+    galleryView.frame.origin.y = totalSize.height - bottomContainer.frame.height - safeAreaBottom - constant
     galleryView.frame.size.height = constant
   }
 

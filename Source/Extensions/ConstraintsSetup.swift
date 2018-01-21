@@ -65,17 +65,29 @@ extension BottomContainerView {
 extension TopView {
 
   func setupConstraints() {
-    addConstraint(NSLayoutConstraint(item: flashButton, attribute: .left,
+    addConstraint(NSLayoutConstraint(item: cancelButton, attribute: .left,
       relatedBy: .equal, toItem: self, attribute: .left,
       multiplier: 1, constant: Dimensions.leftOffset))
 
-    addConstraint(NSLayoutConstraint(item: flashButton, attribute: .centerY,
+    addConstraint(NSLayoutConstraint(item: cancelButton, attribute: .centerY,
       relatedBy: .equal, toItem: self, attribute: .centerY,
       multiplier: 1, constant: 0))
 
-    addConstraint(NSLayoutConstraint(item: flashButton, attribute: .width,
+    addConstraint(NSLayoutConstraint(item: cancelButton, attribute: .width,
       relatedBy: .equal, toItem: nil, attribute: .notAnAttribute,
       multiplier: 1, constant: 55))
+
+    addConstraint(NSLayoutConstraint(item: flashButton, attribute: .centerX,
+                                     relatedBy: .equal, toItem: self, attribute: .centerX,
+                                     multiplier: 1, constant: 0))
+
+    addConstraint(NSLayoutConstraint(item: flashButton, attribute: .centerY,
+                                     relatedBy: .equal, toItem: self, attribute: .centerY,
+                                     multiplier: 1, constant: 0))
+
+    addConstraint(NSLayoutConstraint(item: flashButton, attribute: .width,
+                                     relatedBy: .equal, toItem: nil, attribute: .notAnAttribute,
+                                     multiplier: 1, constant: 55))
 
     if configuration.canRotateCamera {
       addConstraint(NSLayoutConstraint(item: rotateCamera, attribute: .right,
@@ -106,9 +118,16 @@ extension ImagePickerController {
     let topViewAttributes: [NSLayoutAttribute] = [.left, .top, .width]
 
     for attribute in attributes {
-      view.addConstraint(NSLayoutConstraint(item: bottomContainer, attribute: attribute,
-        relatedBy: .equal, toItem: view, attribute: attribute,
-        multiplier: 1, constant: 0))
+      var constant: CGFloat = 0
+      if #available(iOS 11.0, *), attribute == .bottom {
+        view.addConstraint(NSLayoutConstraint(item: bottomContainer, attribute: attribute,
+                                              relatedBy: .equal, toItem: view.safeAreaLayoutGuide, attribute: attribute,
+                                              multiplier: 1, constant: constant))
+      } else {
+        view.addConstraint(NSLayoutConstraint(item: bottomContainer, attribute: attribute,
+                                              relatedBy: .equal, toItem: view, attribute: attribute,
+                                              multiplier: 1, constant: constant))
+      }
     }
 
     for attribute: NSLayoutAttribute in [.left, .top, .width] {
@@ -118,9 +137,16 @@ extension ImagePickerController {
     }
 
     for attribute in topViewAttributes {
-      view.addConstraint(NSLayoutConstraint(item: topView, attribute: attribute,
-        relatedBy: .equal, toItem: self.view, attribute: attribute,
-        multiplier: 1, constant: 0))
+      var constant: CGFloat = 0
+      if #available(iOS 11.0, *), attribute == .top {
+        view.addConstraint(NSLayoutConstraint(item: topView, attribute: attribute,
+                                              relatedBy: .equal, toItem: view.safeAreaLayoutGuide, attribute: attribute,
+                                              multiplier: 1, constant: constant))
+      } else {
+        view.addConstraint(NSLayoutConstraint(item: topView, attribute: attribute,
+                                              relatedBy: .equal, toItem: view, attribute: attribute,
+                                              multiplier: 1, constant: constant))
+      }
     }
 
     view.addConstraint(NSLayoutConstraint(item: bottomContainer, attribute: .height,
